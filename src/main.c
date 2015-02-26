@@ -179,6 +179,7 @@ static void advertising_init(void)
 
 	ble_uuid_t adv_uuids[] =
 	{
+		{BLE_UUID_NUS_SERVICE, m_nus.uuid_type},
 		{BLE_UUID_HEART_RATE_SERVICE, BLE_UUID_TYPE_BLE},
 		{BLE_UUID_BATTERY_SERVICE, BLE_UUID_TYPE_BLE},
 		{BLE_UUID_HEALTH_THERMOMETER_SERVICE, BLE_UUID_TYPE_BLE},
