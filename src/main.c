@@ -57,6 +57,7 @@ static uint16_t                              m_conn_handle = BLE_CONN_HANDLE_INV
 static ble_gap_sec_params_t                  m_sec_params;                              /**< Security requirements for this application. */
 static ble_gap_adv_params_t                  m_adv_params;                              /**< Parameters to be passed to the stack when starting advertising. */
 static ble_hrs_t                             m_hrs;                                     /**< Structure used to identify the heart rate service. */
+static ble_nus_t                             m_nus;                                     /**< Structure used to identify the nordic UART service.*/
 static ble_bas_t                             m_bas;
 static ble_hts_t			     m_hts;
 
