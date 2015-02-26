@@ -489,8 +489,8 @@ int main(void)
 	adc_init();
 
 	gap_params_init();
-	advertising_init();
 	services_init();
+	advertising_init();
 	conn_params_init();
 	sec_params_init();
 
