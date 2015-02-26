@@ -1,4 +1,4 @@
-PROJECT_ROOT = $(HOME)/project/ecgpatch/sensor
+PROJECT_ROOT = $(HOME)/sensor-uart
 
 TARGET = arm-none-eabi-
 
