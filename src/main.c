@@ -11,6 +11,7 @@
 #include "ble_bas.h"
 #include "ble_hrs.h"
 #include "ble_hts.h"
+#include "ble_nus.h"
 #include "ble_conn_params.h"
 #include "softdevice_handler.h"
 #include "app_timer.h"
