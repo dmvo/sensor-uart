@@ -218,6 +218,7 @@ static void services_init(void)
 	ble_hrs_init_t hrs_init;
 	ble_bas_init_t bas_init;
 	ble_hts_init_t hts_init;
+	ble_nus_init_t nus_init;
 	uint8_t        body_sensor_location;
 
 	/* Initialize Heart Rate Service. */
@@ -272,6 +273,13 @@ static void services_init(void)
 	BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&hts_init.hts_temp_type_attr_md.write_perm);
 
 	err_code = ble_hts_init(&m_hts, &hts_init);
+	APP_ERROR_CHECK(err_code);
+	//Initialize nordic UART service
+	memset(&nus_init, 0, sizeof(nus_init));
+
+	nus_init.data_handler = NULL;
+
+	err_code = ble_nus_init(&m_nus, &nus_init);
 	APP_ERROR_CHECK(err_code);
 }
 
