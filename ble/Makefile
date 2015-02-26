@@ -8,6 +8,7 @@ OBJECTS = \
 	       ble_bas.o \
 	       ble_srv_common.o \
 	       ble_hts.o \
+	       ble_nus.o \
 
 libs:	libble.a($(OBJECTS))
 
