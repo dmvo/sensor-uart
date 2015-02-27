@@ -453,6 +453,7 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 	ble_bas_on_ble_evt(&m_bas, p_ble_evt);
 	ble_hrs_on_ble_evt(&m_hrs, p_ble_evt);
 	ble_hts_on_ble_evt(&m_hts, p_ble_evt);
+	ble_nus_on_ble_evt(&m_nus, p_ble_evt);
 	ble_conn_params_on_ble_evt(p_ble_evt);
 	on_ble_evt(p_ble_evt);
 }
