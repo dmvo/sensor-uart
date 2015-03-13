@@ -403,8 +403,10 @@ void ADC_IRQHandler(void)
 	uint32_t delay;
 	uint16_t rr_interval;
 	uint32_t err_code;
-	uint8_t  heart_rate_string[5];
-	static bool tosend = true;
+	uint8_t  heart_rate_string[20];
+	//static bool tosend = true;
+	static int tosend;
+	static uint16_t s_prev_heart_rate;
 
 	NRF_ADC->EVENTS_END = 0;
 	result = NRF_ADC->RESULT;
@@ -432,18 +434,25 @@ void ADC_IRQHandler(void)
 			ble_hrs_rr_interval_add(&m_hrs, rr_interval);
 		}
 
-		if (tosend) {
+		//if(tosend){
+		if ((tosend % 4) == 0) {
 			s_cur_heart_rate = result;
-			sprintf(heart_rate_string, "%u", s_cur_heart_rate);
-			err_code = ble_nus_send_string(&m_nus, heart_rate_string, sizeof(heart_rate_string)-1);
+			sprintf(heart_rate_string, "\n%d\n%d", s_prev_heart_rate, s_cur_heart_rate);
+			err_code = ble_nus_send_string(&m_nus, heart_rate_string, 8);
 			if ((err_code != NRF_SUCCESS) &&
 					(err_code != NRF_ERROR_INVALID_STATE)
 					&& (err_code != BLE_ERROR_NO_TX_BUFFERS)
 					&& (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)) {
 			}
 		}
+		else if((tosend % 2) == 0)
+			s_prev_heart_rate = result;
 
-		tosend = !tosend;
+		//tosend = !tosend;
+		if(tosend < 99)
+			tosend++;
+		else
+			tosend = 0;
 	}
 
 }
