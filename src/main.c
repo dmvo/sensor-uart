@@ -404,7 +404,6 @@ void ADC_IRQHandler(void)
 	uint16_t rr_interval;
 	uint32_t err_code;
 	uint8_t  heart_rate_string[20];
-	//static bool tosend = true;
 	static int tosend;
 	static uint16_t s_prev_heart_rate;
 
@@ -434,11 +433,10 @@ void ADC_IRQHandler(void)
 			ble_hrs_rr_interval_add(&m_hrs, rr_interval);
 		}
 
-		//if(tosend){
 		if ((tosend % 4) == 0) {
 			s_cur_heart_rate = result;
-			sprintf(heart_rate_string, "\n%d\n%d", s_prev_heart_rate, s_cur_heart_rate);
-			err_code = ble_nus_send_string(&m_nus, heart_rate_string, 8);
+			sprintf(heart_rate_string, "%d\n%d", s_prev_heart_rate, s_cur_heart_rate);
+			err_code = ble_nus_send_string(&m_nus, heart_rate_string, strlen(heart_rate_string));
 			if ((err_code != NRF_SUCCESS) &&
 					(err_code != NRF_ERROR_INVALID_STATE)
 					&& (err_code != BLE_ERROR_NO_TX_BUFFERS)
