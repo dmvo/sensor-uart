@@ -53,10 +53,6 @@
 
 #define TEMP_TYPE_AS_CHARACTERISTIC          1                                          /**< Determines if temperature type is given as characteristic (1) or as a field of measurement (0). */
 
-#define ADC_REF_VOLTAGE_IN_MILLIVOLTS		1200						/**< Reference voltage (in millivolts) used by ADC while doing conversion. */
-#define ADC_PRE_SCALING_COMPENSATION		3						/**< The ADC is configured to use VDD with 1/3 prescaling as input. And hence the result of conversion is to be multiplied by 3 to get the actual value of the battery voltage.*/
-#define DIODE_FWD_VOLT_DROP_MILLIVOLTS		270						/**< Typical forward voltage drop of the diode (Part no: SD103ATW-7-F) that is connnected in series with the voltage supply.  This is the voltage drop when the forward current is 1mA. Source: Data sheet of 'SURFACE MOUNT SCHOTTKY BARRIER DIODE ARRAY' available at www.diodes.com. */
-
 static uint16_t                              m_conn_handle = BLE_CONN_HANDLE_INVALID;   /**< Handle of the current connection. */
 static ble_gap_sec_params_t                  m_sec_params;                              /**< Security requirements for this application. */
 static ble_gap_adv_params_t                  m_adv_params;                              /**< Parameters to be passed to the stack when starting advertising. */
@@ -82,6 +78,10 @@ static volatile uint16_t        s_cur_heart_rate;
 	(ADC_CONFIG_PSEL_Disabled << ADC_CONFIG_PSEL_Pos) | \
 	(ADC_CONFIG_EXTREFSEL_None << ADC_CONFIG_EXTREFSEL_Pos))
 
+#define ADC_REF_VOLTAGE_IN_MILLIVOLTS		1200						/**< Reference voltage (in millivolts) used by ADC while doing conversion. */
+#define ADC_PRE_SCALING_COMPENSATION		3						/**< The ADC is configured to use VDD with 1/3 prescaling as input. And hence the result of conversion is to be multiplied by 3 to get the actual value of the battery voltage.*/
+#define DIODE_FWD_VOLT_DROP_MILLIVOLTS		270						/**< Typical forward voltage drop of the diode (Part no: SD103ATW-7-F) that is connnected in series with the voltage supply.  This is the voltage drop when the forward current is 1mA. Source: Data sheet of 'SURFACE MOUNT SCHOTTKY BARRIER DIODE ARRAY' available at www.diodes.com. */
+
 /**@brief Macro to convert the result of ADC conversion in millivolts.
  *
  * @param[in]  ADC_VALUE ADC result.
@@ -89,7 +89,6 @@ static volatile uint16_t        s_cur_heart_rate;
  */
 #define ADC_RESULT_IN_MILLI_VOLTS(ADC_VALUE)\
 	((((ADC_VALUE) * ADC_REF_VOLTAGE_IN_MILLIVOLTS) / 255) * ADC_PRE_SCALING_COMPENSATION)
-
 void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p_file_name)
 {
 	// This call can be used for debug purposes during application development.
