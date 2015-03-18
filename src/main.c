@@ -410,26 +410,42 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 
 void ADC_IRQHandler(void)
 {
-	volatile uint32_t result;
-	static uint32_t ticks, prev_ticks;
-	uint32_t delay;
-	uint16_t rr_interval;
-	uint32_t err_code;
-	uint8_t  heart_rate_string[20];
-	static int tosend;
-	static uint16_t s_prev_heart_rate;
-
+	volatile uint32_t 	result;
+	static uint32_t 	ticks, prev_ticks;
+	uint32_t 		delay;
+	uint16_t 		rr_interval;
+	uint32_t 		err_code;
+	uint8_t  		heart_rate_string[20];
+	static int 		tosend;
+	static uint16_t 	s_prev_heart_rate;
+	uint16_t 		batt_lvl_in_milli_volts;
+	uint8_t			percentage_batt_lvl;
 	NRF_ADC->EVENTS_END = 0;
 	result = NRF_ADC->RESULT;
 	NRF_ADC->TASKS_STOP = 1;
 
 	if (NRF_ADC->CONFIG == ADC_BAT_SAMPLE) {
 		// Process the bat status and send it out
-		// [TODO]
+		batt_lvl_in_milli_volts = ADC_RESULT_IN_MILLI_VOLTS(result) +
+					  DIODE_FWD_VOLT_DROP_MILLIVOLTS;
+		percentage_batt_lvl     = battery_level_in_percent(batt_lvl_in_milli_volts);
+		err_code = ble_bas_battery_level_update(&m_bas, percentage_batt_lvl);
+		if(
+		  (err_code != NRF_SUCCESS)
+		  &&
+		  (err_code != NRF_ERROR_INVALID_STATE)
+		  &&
+		  (err_code != BLE_ERROR_NO_TX_BUFFERS)
+		  &&
+		  (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
+		)
+		{
+			APP_ERROR_HANDLER(err_code);
+		}
+		
 		// bring the config back to "normal" ECG
 		// not to touch it before the next battery
 		// measurement
-		//
 		NRF_ADC->CONFIG = ADC_ECG_SAMPLE;
 		// restart the ADC to take the sample for
 		// Pan-Tompkins
