@@ -55,7 +55,7 @@
 
 #define ADC_REF_VOLTAGE_IN_MILLIVOLTS		1200						/**< Reference voltage (in millivolts) used by ADC while doing conversion. */
 #define ADC_PRE_SCALING_COMPENSATION		3						/**< The ADC is configured to use VDD with 1/3 prescaling as input. And hence the result of conversion is to be multiplied by 3 to get the actual value of the battery voltage.*/
-#define DIODE_FWD_VOLT_DROP_MILLIVOLTS		270						/**< Typical forward voltage drop of the diode (Part no: SD103ATW-7-F) that is connnected in series with the voltage supply.  This is the voltage drop when the forward current is 1mA. Source: Data sheet of 'SURFACE MOUNT SCHOTTKY BARRIER DIODE ARRAY' available at www.diodes.com. */
+#define DIODE_FWD_VOLT_DROP_MILLIVOLTS		270						/**< Typical forward voltage drop of the diode (Part no: SD103ATW-7-F) that is connnected in series with the voltage supply.  This is the voltage drop when the forward current is 1mA. Source: Data sheet of 'SURFACE MOUNT SCHOTTKY BARRIER DIODE ARRAY' available at www.diodes.com. (Needed when using evaluation board powered from the USB)*/
 
 static uint16_t                              m_conn_handle = BLE_CONN_HANDLE_INVALID;   /**< Handle of the current connection. */
 static ble_gap_sec_params_t                  m_sec_params;                              /**< Security requirements for this application. */
@@ -420,14 +420,14 @@ void ADC_IRQHandler(void)
 	static uint16_t 	s_prev_heart_rate;
 	uint16_t 		batt_lvl_in_milli_volts;
 	uint8_t			percentage_batt_lvl;
+	static uint8_t		i;
 	NRF_ADC->EVENTS_END = 0;
 	result = NRF_ADC->RESULT;
 	NRF_ADC->TASKS_STOP = 1;
 
 	if (NRF_ADC->CONFIG == ADC_BAT_SAMPLE) {
 		// Process the bat status and send it out
-		batt_lvl_in_milli_volts = ADC_RESULT_IN_MILLI_VOLTS(result) +
-					  DIODE_FWD_VOLT_DROP_MILLIVOLTS;
+		batt_lvl_in_milli_volts = ADC_RESULT_IN_MILLI_VOLTS(result);
 		percentage_batt_lvl     = battery_level_in_percent(batt_lvl_in_milli_volts);
 		err_code = ble_bas_battery_level_update(&m_bas, percentage_batt_lvl);
 		if(
