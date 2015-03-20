@@ -124,13 +124,19 @@ static void adc_meas_timeout_handler(void *p_context)
 static void thermo_timeout_handler(void *p_context)
 {
 	ble_hts_meas_t temp;
-	static int cnt;
+	int8_t exponent;
+	int32_t value;
+	uint32_t err_code;
+
+	err_code = sd_temp_get(&value);
+	APP_ERROR_CHECK(err_code);
+	value =  (value* 100)/4;
 
 	temp.temp_in_fahr_units = false;
 	temp.time_stamp_present = false;
 	temp.temp_type_present = false;
-	temp.temp_in_celcius.exponent = -1;
-	temp.temp_in_celcius.mantissa = cnt++;
+	temp.temp_in_celcius.exponent  = -2;
+	temp.temp_in_celcius.mantissa  = value;
 
 	ble_hts_measurement_send(&m_hts, &temp);
 }
