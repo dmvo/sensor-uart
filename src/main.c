@@ -69,6 +69,8 @@ static app_timer_id_t                        m_adc_timer_id;
 static app_timer_id_t			     m_thermo_timer_id;
 
 static volatile uint16_t        s_cur_heart_rate;
+static volatile uint32_t	temp_value;
+static int 			temp_flag;
 
 #define ADC_ECG_SAMPLE ((ADC_CONFIG_RES_10bit << ADC_CONFIG_RES_Pos) | \
 	(ADC_CONFIG_INPSEL_AnalogInputOneThirdPrescaling << ADC_CONFIG_INPSEL_Pos) | \
@@ -123,22 +125,19 @@ static void adc_meas_timeout_handler(void *p_context)
 
 static void thermo_timeout_handler(void *p_context)
 {
-	ble_hts_meas_t temp;
-	int8_t exponent;
 	int32_t value;
 	uint32_t err_code;
-
+	
 	err_code = sd_temp_get(&value);
 	APP_ERROR_CHECK(err_code);
-	value =  (value* 100)/4;
 
-	temp.temp_in_fahr_units = false;
-	temp.time_stamp_present = false;
-	temp.temp_type_present = false;
-	temp.temp_in_celcius.exponent  = -2;
-	temp.temp_in_celcius.mantissa  = value;
-
-	ble_hts_measurement_send(&m_hts, &temp);
+	if(value != temp_value){
+		temp_value = value;
+		temp_flag = 1;
+	}
+	else
+		temp_flag = 0;
+		
 }
 
 static void on_hts_evt(ble_hts_t * p_hts, ble_hts_evt_t *p_evt)
