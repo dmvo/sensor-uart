@@ -465,7 +465,10 @@ void ADC_IRQHandler(void)
 
 		if ((tosend % 4) == 0) {
 			s_cur_heart_rate = result;
-			sprintf(heart_rate_string, "%d\n%d", s_prev_heart_rate, s_cur_heart_rate);
+			if(temp_flag)//Include temperature measurement to data to be sent  when the value changes
+				sprintf(heart_rate_string, "%d-%d-%d", temp_value, s_prev_heart_rate, s_cur_heart_rate);
+			else
+				sprintf(heart_rate_string, "%d-%d", s_prev_heart_rate, s_cur_heart_rate);
 			err_code = ble_nus_send_string(&m_nus, heart_rate_string, strlen(heart_rate_string));
 			if ((err_code != NRF_SUCCESS) &&
 					(err_code != NRF_ERROR_INVALID_STATE)
