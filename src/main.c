@@ -140,9 +140,6 @@ static void thermo_timeout_handler(void *p_context)
 		
 }
 
-static void on_hts_evt(ble_hts_t * p_hts, ble_hts_evt_t *p_evt)
-{
-}
 
 static void timers_init(void)
 {
@@ -278,7 +275,7 @@ static void services_init(void)
 	/* Initialize health thermometer service */
 	memset(&hts_init, 0, sizeof(hts_init));
 
-	hts_init.evt_handler = on_hts_evt;
+	hts_init.evt_handler = NULL;
 
 	hts_init.temp_type_as_characteristic = TEMP_TYPE_AS_CHARACTERISTIC;
 	hts_init.temp_type = BLE_HTS_TEMP_TYPE_BODY;
