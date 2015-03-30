@@ -17,6 +17,8 @@
 #include "app_timer.h"
 #include "ble_error_log.h"
 #include "ble_debug_assert_handler.h"
+#include "simple_uart.h"
+#include "pca10001.h"
 
 #include "qrsdet.h"
 
@@ -226,6 +228,14 @@ static void advertising_init(void)
 	m_adv_params.timeout     = APP_ADV_TIMEOUT_IN_SECONDS;
 }
 
+void nus_data_handler(ble_nus_t *p_nus, uint8_t *p_data, uint16_t length)
+{
+	int i;
+	for(i = 0; i<length; i++)
+		simple_uart_put(p_data[i]);
+	simple_uart_put('\n');
+}
+
 static void services_init(void)
 {
 	uint32_t       err_code;
@@ -291,7 +301,7 @@ static void services_init(void)
 	//Initialize nordic UART service
 	memset(&nus_init, 0, sizeof(nus_init));
 
-	nus_init.data_handler = NULL;
+	nus_init.data_handler = nus_data_handler;
 
 	err_code = ble_nus_init(&m_nus, &nus_init);
 	APP_ERROR_CHECK(err_code);
@@ -524,6 +534,8 @@ static void power_manage(void)
 int main(void)
 {
 	QRSDet(0, 1);	
+
+	simple_uart_config(RTS_PIN_NUMBER, TX_PIN_NUMBER, CTS_PIN_NUMBER, RX_PIN_NUMBER, HWFC);
 
 	ble_stack_init();
 	timers_init();
