@@ -37,6 +37,7 @@
                                     * PSTORAGE_FLASH_PAGE_SIZE)                                 /**< Start address for persistent data, configurable according to system requirements. */
 #define PSTORAGE_DATA_END_ADDR      (PSTORAGE_FLASH_PAGE_END * PSTORAGE_FLASH_PAGE_SIZE)        /**< End address for persistent data, configurable according to system requirements. */
 #define PSTORAGE_MAX_BLOCK_SIZE     PSTORAGE_FLASH_PAGE_SIZE                                    /**< Maximum size of block that can be registered with the module. Should be configured based on system requirements. And should be greater than or equal to the minimum size. */
+#define PSTORAGE_SWAP_ADDR          PSTORAGE_DATA_END_ADDR
 #define PSTORAGE_CMD_QUEUE_SIZE     30                                                          /**< Maximum number of flash access commands that can be maintained by the module for all applications. Configurable. */
 
 
