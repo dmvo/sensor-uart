@@ -817,6 +817,7 @@ static uint32_t cmd_process(void)
 uint32_t pstorage_init(void)
 {
     uint32_t retval;
+    uint32_t index;
 
     cmd_queue_init();
 
@@ -824,7 +825,7 @@ uint32_t pstorage_init(void)
     m_next_page_addr    = PSTORAGE_DATA_START_ADDR;
     m_round_val         = 0;
 
-    for (uint32_t index = 0; index < PSTORAGE_MAX_APPLICATIONS; index++)
+    for (index = 0; index < PSTORAGE_MAX_APPLICATIONS; index++)
     {
         m_app_table[index].cb           = NULL;
         m_app_table[index].block_size   = 0;
