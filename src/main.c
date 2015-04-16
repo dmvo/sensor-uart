@@ -19,7 +19,7 @@
 #include "ble_debug_assert_handler.h"
 #include "simple_uart.h"
 #include "pca10001.h"
-
+#include "pstorage.h"
 #include "qrsdet.h"
 
 #define DEVICE_NAME                          "Electria_HRM"                               /**< Name of device. Will be included in the advertising data. */
