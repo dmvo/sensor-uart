@@ -277,7 +277,7 @@ static void services_init(void)
 	bas_init.evt_handler          = NULL;
 	bas_init.support_notification = true;
 	bas_init.p_report_ref         = NULL;
-	bas_init.initial_batt_level   = 100;
+	bas_init.initial_batt_level   = 0;
 
 	err_code = ble_bas_init(&m_bas, &bas_init);
 	APP_ERROR_CHECK(err_code);
