@@ -58,6 +58,7 @@
 #define ADC_REF_VOLTAGE_IN_MILLIVOLTS		1200						/**< Reference voltage (in millivolts) used by ADC while doing conversion. */
 #define ADC_PRE_SCALING_COMPENSATION		3						/**< The ADC is configured to use VDD with 1/3 prescaling as input. And hence the result of conversion is to be multiplied by 3 to get the actual value of the battery voltage.*/
 #define DIODE_FWD_VOLT_DROP_MILLIVOLTS		270						/**< Typical forward voltage drop of the diode (Part no: SD103ATW-7-F) that is connnected in series with the voltage supply.  This is the voltage drop when the forward current is 1mA. Source: Data sheet of 'SURFACE MOUNT SCHOTTKY BARRIER DIODE ARRAY' available at www.diodes.com. (Needed when using evaluation board powered from the USB)*/
+#define INVALID_TEMPERATURE			255
 
 static uint16_t                              m_conn_handle = BLE_CONN_HANDLE_INVALID;   /**< Handle of the current connection. */
 static ble_gap_sec_params_t                  m_sec_params;                              /**< Security requirements for this application. */
@@ -475,10 +476,9 @@ void ADC_IRQHandler(void)
 
 		if ((tosend % 4) == 0) {
 			s_cur_heart_rate = result;
-			if(temp_flag)//Include temperature measurement to data to be sent  when the value changes
-				sprintf(heart_rate_string, "%d-%d-%d", temp_value, s_prev_heart_rate, s_cur_heart_rate);
-			else
-				sprintf(heart_rate_string, "%d-%d", s_prev_heart_rate, s_cur_heart_rate);
+			if(!temp_flag)
+				temp_value = INVALID_TEMPERATURE;
+			sprintf(heart_rate_string, "%d-%d-%d", temp_value, s_prev_heart_rate, s_cur_heart_rate);
 			err_code = ble_nus_send_string(&m_nus, heart_rate_string, strlen(heart_rate_string));
 			if ((err_code != NRF_SUCCESS) &&
 					(err_code != NRF_ERROR_INVALID_STATE)
