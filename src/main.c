@@ -74,6 +74,7 @@ static app_timer_id_t			     m_thermo_timer_id;
 static volatile uint16_t        s_cur_heart_rate;
 static volatile uint32_t	temp_value;
 static int 			temp_flag;
+static int 			packetNumber;
 
 #define ADC_ECG_SAMPLE ((ADC_CONFIG_RES_10bit << ADC_CONFIG_RES_Pos) | \
 	(ADC_CONFIG_INPSEL_AnalogInputOneThirdPrescaling << ADC_CONFIG_INPSEL_Pos) | \
@@ -392,7 +393,8 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
         case BLE_GAP_EVT_CONNECTED:
 
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
-            break;
+            packetNumber = 0;
+	    break;
 
         case BLE_GAP_EVT_DISCONNECTED:
 
@@ -478,7 +480,11 @@ void ADC_IRQHandler(void)
 			s_cur_heart_rate = result;
 			if(!temp_flag)
 				temp_value = INVALID_TEMPERATURE;
-			sprintf(heart_rate_string, "%d-%d-%d", temp_value, s_prev_heart_rate, s_cur_heart_rate);
+			if(packetNumber == 100)
+				packetNumber = 0;
+			else
+				packetNumber++;
+			sprintf(heart_rate_string, "%d-%d-%d-%d", temp_value, s_prev_heart_rate, s_cur_heart_rate, packetNumber);
 			err_code = ble_nus_send_string(&m_nus, heart_rate_string, strlen(heart_rate_string));
 			if ((err_code != NRF_SUCCESS) &&
 					(err_code != NRF_ERROR_INVALID_STATE)
