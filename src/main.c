@@ -72,8 +72,6 @@ static app_timer_id_t                        m_adc_timer_id;
 static app_timer_id_t			     m_thermo_timer_id;
 
 static volatile uint16_t        s_cur_heart_rate;
-static volatile uint32_t	temp_value;
-static int 			temp_flag;
 static int 			packetNumber;
 
 #define ADC_ECG_SAMPLE ((ADC_CONFIG_RES_10bit << ADC_CONFIG_RES_Pos) | \
@@ -128,22 +126,7 @@ static void adc_meas_timeout_handler(void *p_context)
 }
 
 static void thermo_timeout_handler(void *p_context)
-{
-	int32_t value;
-	uint32_t err_code;
-	
-	err_code = sd_temp_get(&value);
-	APP_ERROR_CHECK(err_code);
-
-	if(value != temp_value){
-		temp_value = value;
-		temp_flag = 1;
-	}
-	else
-		temp_flag = 0;
-		
-}
-
+{}
 
 static void timers_init(void)
 {
@@ -478,13 +461,11 @@ void ADC_IRQHandler(void)
 
 		if ((tosend % 4) == 0) {
 			s_cur_heart_rate = result;
-			if(!temp_flag)
-				temp_value = INVALID_TEMPERATURE;
 			if(packetNumber == 100)
 				packetNumber = 0;
 			else
 				packetNumber++;
-			sprintf(heart_rate_string, "%d-%d-%d-%d", temp_value, s_prev_heart_rate, s_cur_heart_rate, packetNumber);
+			sprintf(heart_rate_string, "%d-%d-%d", s_prev_heart_rate, s_cur_heart_rate, packetNumber);
 			err_code = ble_nus_send_string(&m_nus, heart_rate_string, strlen(heart_rate_string));
 			if ((err_code != NRF_SUCCESS) &&
 					(err_code != NRF_ERROR_INVALID_STATE)
