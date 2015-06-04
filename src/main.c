@@ -71,9 +71,9 @@ static ble_hts_t			     m_hts;
 static app_timer_id_t                        m_adc_timer_id;
 static app_timer_id_t			     m_thermo_timer_id;
 
-static volatile uint16_t        s_cur_heart_rate;
+static volatile uint16_t        cur_ecg_sample;
 static int 			packetNumber;
-
+static int			m_send_hrm_notification;
 #define ADC_ECG_SAMPLE ((ADC_CONFIG_RES_10bit << ADC_CONFIG_RES_Pos) | \
 	(ADC_CONFIG_INPSEL_AnalogInputOneThirdPrescaling << ADC_CONFIG_INPSEL_Pos) | \
 	(ADC_CONFIG_REFSEL_VBG << ADC_CONFIG_REFSEL_Pos) | \
@@ -221,6 +221,13 @@ void nus_data_handler(ble_nus_t *p_nus, uint8_t *p_data, uint16_t length)
 	simple_uart_put('\n');
 }
 
+void hrs_evt_handler(ble_hrs_t *p_hrs, ble_hrs_evt_t *evt){
+	if(evt->evt_type == BLE_HRS_EVT_NOTIFICATION_ENABLED)
+		m_send_hrm_notification = 1;
+	else
+		m_send_hrm_notification = 0;
+}
+
 static void services_init(void)
 {
 	uint32_t       err_code;
@@ -235,7 +242,7 @@ static void services_init(void)
 
 	memset(&hrs_init, 0, sizeof(hrs_init));
 
-	hrs_init.evt_handler                 = NULL;
+	hrs_init.evt_handler                 = hrs_evt_handler;
 	hrs_init.is_sensor_contact_supported = false;
 	hrs_init.p_body_sensor_location      = &body_sensor_location;
 
@@ -358,7 +365,8 @@ static void conn_params_init(void)
 	cp_init.first_conn_params_update_delay = FIRST_CONN_PARAMS_UPDATE_DELAY;
 	cp_init.next_conn_params_update_delay  = NEXT_CONN_PARAMS_UPDATE_DELAY;
 	cp_init.max_conn_params_update_count   = MAX_CONN_PARAMS_UPDATE_COUNT;
-	cp_init.start_on_notify_cccd_handle    = m_nus.rx_handles.cccd_handle;
+	//cp_init.start_on_notify_cccd_handle    = m_nus.rx_handles.cccd_handle;
+	cp_init.start_on_notify_cccd_handle    = BLE_GATT_HANDLE_INVALID;
 	cp_init.disconnect_on_fail             = false;
 	cp_init.evt_handler                    = on_conn_params_evt;
 	cp_init.error_handler                  = conn_params_error_handler;
@@ -382,7 +390,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
         case BLE_GAP_EVT_DISCONNECTED:
 
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
-
+	    m_send_hrm_notification = 0;
             advertising_start();
             break;
 
@@ -413,9 +421,10 @@ void ADC_IRQHandler(void)
 	uint32_t 		delay;
 	uint16_t 		rr_interval;
 	uint32_t 		err_code;
-	uint8_t  		heart_rate_string[20];
+	uint8_t  		ecg_packet[20];
+	uint16_t		heart_rate;
 	static int 		tosend;
-	static uint16_t 	s_prev_heart_rate;
+	static uint16_t 	prev_ecg_sample;
 	uint16_t 		batt_lvl_in_milli_volts;
 	uint8_t			percentage_batt_lvl;
 	static uint8_t		i;
@@ -457,24 +466,35 @@ void ADC_IRQHandler(void)
 			rr_interval = (60 * APP_TIMER_CLOCK_FREQ) / ((APP_TIMER_PRESCALER
 						+ 1) * (ticks - prev_ticks));
 			ble_hrs_rr_interval_add(&m_hrs, rr_interval);
+			heart_rate = 3600/rr_interval;//3600 seconds in a minute
+			if(m_send_hrm_notification){
+				err_code = ble_hrs_heart_rate_measurement_send(&m_hrs, heart_rate);
+				if ((err_code != NRF_SUCCESS) &&
+                                        (err_code != NRF_ERROR_INVALID_STATE)
+                                        && (err_code != BLE_ERROR_NO_TX_BUFFERS)
+                                        && (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)) {
+					APP_ERROR_HANDLER(err_code);
+				}
+			}
 		}
 
 		if ((tosend % 4) == 0) {
-			s_cur_heart_rate = result;
+			cur_ecg_sample = result;
 			if(packetNumber == 100)
 				packetNumber = 0;
 			else
 				packetNumber++;
-			sprintf(heart_rate_string, "%d-%d-%d", s_prev_heart_rate, s_cur_heart_rate, packetNumber);
-			err_code = ble_nus_send_string(&m_nus, heart_rate_string, strlen(heart_rate_string));
+			sprintf(ecg_packet, "%d-%d-%d", prev_ecg_sample, cur_ecg_sample, packetNumber);
+			err_code = ble_nus_send_string(&m_nus, ecg_packet, strlen(ecg_packet));
 			if ((err_code != NRF_SUCCESS) &&
 					(err_code != NRF_ERROR_INVALID_STATE)
 					&& (err_code != BLE_ERROR_NO_TX_BUFFERS)
 					&& (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)) {
+				APP_ERROR_HANDLER(err_code);
 			}
 		}
 		else if((tosend % 2) == 0)
-			s_prev_heart_rate = result;
+			prev_ecg_sample = result;
 
 		//tosend = !tosend;
 		if(tosend < 99)
