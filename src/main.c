@@ -463,10 +463,10 @@ void ADC_IRQHandler(void)
 		if (delay) {
 			prev_ticks = ticks;
 			app_timer_cnt_get(&ticks);
-			rr_interval = (60 * APP_TIMER_CLOCK_FREQ) / ((APP_TIMER_PRESCALER
-						+ 1) * (ticks - prev_ticks));
-			ble_hrs_rr_interval_add(&m_hrs, rr_interval);
-			heart_rate = 3600/rr_interval;//3600 seconds in a minute
+			//Calculate RR-INTERVAL in millisecond
+			rr_interval = ((APP_TIMER_PRESCALER + 1) * (ticks - prev_ticks) * 1000)/
+						(APP_TIMER_CLOCK_FREQ);
+			heart_rate = 60000/rr_interval;//One minute = 60000 milliseconds
 			if(m_send_hrm_notification){
 				err_code = ble_hrs_heart_rate_measurement_send(&m_hrs, heart_rate);
 				if ((err_code != NRF_SUCCESS) &&
